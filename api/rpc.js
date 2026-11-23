@@ -1,9 +1,17 @@
 // Pengganti Code.gs: semua fungsi Apps Script dipanggil lewat /api/rpc
 const { createClient } = require('@supabase/supabase-js');
 
-const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false }
-});
+// Klien dibuat saat dibutuhkan agar error konfigurasi tampil sebagai pesan JSON, bukan crash
+let _sb = null;
+function getSb() {
+  if (!_sb) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)
+      throw new Error('Environment variable SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY belum diisi di Vercel.');
+    _sb = createClient(process.env.SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_ROLE_KEY.trim(), { auth: { persistSession: false } });
+  }
+  return _sb;
+}
+const sb = { from: function () { var c = getSb(); return c.from.apply(c, arguments); } };
 const HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const TTL_MS = 6 * 3600 * 1000;
 

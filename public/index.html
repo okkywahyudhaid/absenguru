@@ -502,7 +502,7 @@ table.g thead th{border-bottom:2px solid #546e7a;font-size:.95em}
       return function(){
         var args=Array.prototype.slice.call(arguments);
         fetch('/api/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fn:name,args:args})})
-          .then(function(r){return r.json()})
+          .then(function(r){return r.text().then(function(t){try{return JSON.parse(t)}catch(e){return{error:'Server error ('+r.status+'): '+t.slice(0,120)}}})})
           .then(function(j){
             if(j.error){if(fail)fail({message:j.error});else console.error(j.error)}
             else if(ok)ok(j.result);
